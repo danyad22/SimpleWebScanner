@@ -3,11 +3,10 @@ import multiprocessing
 import socket
 import time
 import argparse
+from colorama import Fore, Style, init
 
-# ANSI color codes for red and green
-RED = '\033[91m'
-GREEN = '\033[92m'
-ENDC = '\033[0m'  # Reset color
+# Initialize colorama
+init()
 
 def ping(ip_address, timeout=2, verbose=False):
     try:
@@ -18,19 +17,19 @@ def ping(ip_address, timeout=2, verbose=False):
         elapsed_time = time.time() - start_time
         if result == 0:
             if verbose:
-                print(GREEN + f"Success: {ip_address} - Response time: {elapsed_time:.2f}s" + ENDC)
+                print(Fore.GREEN + f"Success: {ip_address} - Response time: {elapsed_time:.2f}s" + Style.RESET_ALL)
             return ip_address, True
         else:
             if verbose:
-                print(RED + f"Failed: {ip_address} - Response time: {elapsed_time:.2f}s" + ENDC)
+                print(Fore.RED + f"Failed: {ip_address} - Response time: {elapsed_time:.2f}s" + Style.RESET_ALL)
             return ip_address, False
     except socket.timeout:
         if verbose:
-            print(RED + f"Timeout: {ip_address}" + ENDC)
+            print(Fore.RED + f"Timeout: {ip_address}" + Style.RESET_ALL)
         return ip_address, False
     except Exception as e:
         if verbose:
-            print(RED + f"Error: {ip_address} - {str(e)}" + ENDC)
+            print(Fore.RED + f"Error: {ip_address} - {str(e)}" + Style.RESET_ALL)
         return ip_address, False
 
 def scan_ips(num_ips, timeout=2, verbose=False, cpu_amount=None):
@@ -44,8 +43,9 @@ def scan_ips(num_ips, timeout=2, verbose=False, cpu_amount=None):
     pool.close()
     pool.join()
 
-    # Collect results
+    # Collect results and sort by status (dead IPs first)
     scanned_ips = [result.get() for result in results]
+    scanned_ips.sort(key=lambda x: (x[1], x[0]))  # Sort by status (dead IPs first) then IP address
     return scanned_ips
 
 if __name__ == "__main__":
@@ -65,5 +65,5 @@ if __name__ == "__main__":
     scanned_ips = scan_ips(num_ips_to_scan, timeout, verbose, cpu_amount)
     print("Scan complete. Results:")
     for ip, status in scanned_ips:
-        status_str = GREEN + "Alive" + ENDC if status else RED + "Dead" + ENDC
+        status_str = Fore.GREEN + "Alive" + Style.RESET_ALL if status else Fore.RED + "Dead" + Style.RESET_ALL
         print(f"IP: {ip}, Status: {status_str}")
