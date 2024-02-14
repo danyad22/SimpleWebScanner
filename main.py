@@ -14,23 +14,23 @@ def ping(ip_address, timeout=2, verbose=False):
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         sock.settimeout(timeout)
         result = sock.connect_ex((ip_address, 80))
-        elapsed_time = time.time() - start_time
+        elapsed_time = (time.time() - start_time) * 1000  # Convert to milliseconds
         if result == 0:
             if verbose:
-                print(Fore.GREEN + f"Success: {ip_address} - Response time: {elapsed_time:.2f}s" + Style.RESET_ALL)
-            return ip_address, True
+                print(Fore.GREEN + f"Success: {ip_address} - Response time: {elapsed_time:.2f}ms" + Style.RESET_ALL)
+            return ip_address, True, elapsed_time
         else:
             if verbose:
-                print(Fore.RED + f"Failed: {ip_address} - Response time: {elapsed_time:.2f}s" + Style.RESET_ALL)
-            return ip_address, False
+                print(Fore.RED + f"Failed: {ip_address} - Response time: {elapsed_time:.2f}ms" + Style.RESET_ALL)
+            return ip_address, False, elapsed_time
     except socket.timeout:
         if verbose:
             print(Fore.RED + f"Timeout: {ip_address}" + Style.RESET_ALL)
-        return ip_address, False
+        return ip_address, False, timeout * 1000  # Return timeout in milliseconds
     except Exception as e:
         if verbose:
             print(Fore.RED + f"Error: {ip_address} - {str(e)}" + Style.RESET_ALL)
-        return ip_address, False
+        return ip_address, False, 0  # Return 0 ms for errors
 
 def scan_ips(num_ips, timeout=2, verbose=False, cpu_amount=None):
     # Generate random IP addresses and scan them
@@ -64,6 +64,6 @@ if __name__ == "__main__":
     print(f"Scanning {num_ips_to_scan} random IP addresses...")
     scanned_ips = scan_ips(num_ips_to_scan, timeout, verbose, cpu_amount)
     print("Scan complete. Results:")
-    for ip, status in scanned_ips:
+    for ip, status, response_time in scanned_ips:
         status_str = Fore.GREEN + "Alive" + Style.RESET_ALL if status else Fore.RED + "Dead" + Style.RESET_ALL
-        print(f"IP: {ip}, Status: {status_str}")
+        print(f"IP: {ip}, Status: {status_str}, Response Time: {response_time:.2f}ms")
