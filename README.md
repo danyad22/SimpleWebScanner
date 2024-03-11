@@ -1,1 +1,1 @@
-Example: python .\main.py --scan_amount 100 --timeout 0.6 --verbose --cpu_amount 8 (60 max)
+Example: python .\main.py --scan_amount 1000 --timeout 0.15 --verbose --cpu_amount 61
